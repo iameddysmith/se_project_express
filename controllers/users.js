@@ -20,16 +20,16 @@ const getUser = (req, res) => {
     return res.status(BAD_REQUEST).json({ message: "Invalid user ID format" });
   }
 
-  User.findById(userId)
+  return User.findById(userId)
     .then((user) => {
       if (!user) {
         return res.status(NOT_FOUND).json({ message: "User not found" });
       }
-      res.status(200).json(user);
+      return res.status(200).json(user);
     })
     .catch((err) => {
       console.error(err);
-      res
+      return res
         .status(SERVER_ERROR)
         .json({ message: "Error retrieving user", error: err });
     });

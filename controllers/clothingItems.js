@@ -1,6 +1,6 @@
+const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
 const { BAD_REQUEST, SERVER_ERROR } = require("../utils/errors");
-const mongoose = require("mongoose");
 
 const getClothingItems = (req, res) => {
   ClothingItem.find({})
@@ -16,7 +16,7 @@ const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageUrl, owner })
+  return ClothingItem.create({ name, weather, imageUrl, owner })
     .then((newItem) => res.status(201).json(newItem))
     .catch((err) => {
       console.error(err);
@@ -26,7 +26,7 @@ const createClothingItem = (req, res) => {
           error: err,
         });
       }
-      res.status(SERVER_ERROR).json({
+      return res.status(SERVER_ERROR).json({
         message: "Error creating clothing item",
         error: err,
       });

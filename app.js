@@ -1,5 +1,4 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const routes = require("./routes");
 
 const app = express();
@@ -18,14 +17,6 @@ app.use(routes);
 
 app.use((req, res) => {
   res.status(404).send({ message: "Requested resource not found" });
-});
-
-app.use((err, req, res, next) => {
-  res.status(err.status || 500);
-  res.json({
-    message: err.message,
-    error: process.env.NODE_ENV === "development" ? err : {},
-  });
 });
 
 mongoose
