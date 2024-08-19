@@ -1,14 +1,20 @@
 const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
-const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+const {
+  OK,
+  CREATED,
+  BAD_REQUEST,
+  NOT_FOUND,
+  SERVER_ERROR,
+} = require("../utils/errors");
 
 const getClothingItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => res.status(200).send(items))
-    .catch((err) =>
+    .then((items) => res.status(OK).send(items))
+    .catch(() =>
       res
         .status(SERVER_ERROR)
-        .send({ message: "Error retrieving clothing items", error: err })
+        .send({ message: "Error retrieving clothing items" })
     );
 };
 
@@ -17,18 +23,16 @@ const createClothingItem = (req, res) => {
   const owner = req.user._id;
 
   return ClothingItem.create({ name, weather, imageUrl, owner })
-    .then((newItem) => res.status(201).json(newItem))
+    .then((newItem) => res.status(CREATED).json(newItem))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).json({
           message: "Invalid clothing item data",
-          error: err,
         });
       }
       return res.status(SERVER_ERROR).json({
         message: "Error creating clothing item",
-        error: err,
       });
     });
 };
@@ -44,12 +48,10 @@ const deleteClothingItem = (req, res) => {
       if (!item) {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
-      return res.status(200).send({ message: "Item deleted successfully" });
+      return res.status(OK).send({ message: "Item deleted successfully" });
     })
-    .catch((err) =>
-      res
-        .status(SERVER_ERROR)
-        .send({ message: "Error deleting item", error: err })
+    .catch(() =>
+      res.status(SERVER_ERROR).send({ message: "Error deleting item" })
     );
 };
 
@@ -69,12 +71,10 @@ const likeItem = (req, res) => {
       if (!item) {
         return res.status(NOT_FOUND).json({ message: "Item not found" });
       }
-      return res.status(200).send(item);
+      return res.status(OK).send(item);
     })
-    .catch((err) =>
-      res
-        .status(SERVER_ERROR)
-        .send({ message: "Error liking item", error: err })
+    .catch(() =>
+      res.status(SERVER_ERROR).send({ message: "Error liking item" })
     );
 };
 
@@ -94,12 +94,10 @@ const dislikeItem = (req, res) => {
       if (!item) {
         return res.status(NOT_FOUND).json({ message: "Item not found" });
       }
-      return res.status(200).send(item);
+      return res.status(OK).send(item);
     })
-    .catch((err) =>
-      res
-        .status(SERVER_ERROR)
-        .send({ message: "Error disliking item", error: err })
+    .catch(() =>
+      res.status(SERVER_ERROR).send({ message: "Error disliking item" })
     );
 };
 
