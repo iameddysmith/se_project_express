@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
-const { BAD_REQUEST, SERVER_ERROR } = require("../utils/errors");
+const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
 
 const getClothingItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) =>
       res
-        .status(500)
+        .status(SERVER_ERROR)
         .send({ message: "Error retrieving clothing items", error: err })
     );
 };
@@ -36,41 +36,45 @@ const createClothingItem = (req, res) => {
 const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(400).json({ message: "Invalid item ID" });
+    return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
   }
 
-  ClothingItem.findByIdAndRemove(itemId)
+  return ClothingItem.findByIdAndRemove(itemId)
     .then((item) => {
-      if (!item) return res.status(404).send({ message: "Item not found" });
-      res.status(200).send({ message: "Item deleted successfully" });
+      if (!item) {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+      return res.status(200).send({ message: "Item deleted successfully" });
     })
     .catch((err) =>
-      res.status(500).send({ message: "Error deleting item", error: err })
+      res
+        .status(SERVER_ERROR)
+        .send({ message: "Error deleting item", error: err })
     );
 };
 
-// Like handler
 const likeItem = (req, res) => {
   const { itemId } = req.params;
 
-  // Validate itemId
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(400).json({ message: "Invalid item ID" });
+    return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
   }
 
-  ClothingItem.findByIdAndUpdate(
+  return ClothingItem.findByIdAndUpdate(
     itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
     .then((item) => {
       if (!item) {
-        return res.status(404).json({ message: "Item not found" });
+        return res.status(NOT_FOUND).json({ message: "Item not found" });
       }
-      res.status(200).send(item);
+      return res.status(200).send(item);
     })
     .catch((err) =>
-      res.status(500).send({ message: "Error liking item", error: err })
+      res
+        .status(SERVER_ERROR)
+        .send({ message: "Error liking item", error: err })
     );
 };
 
@@ -78,22 +82,24 @@ const dislikeItem = (req, res) => {
   const { itemId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(400).json({ message: "Invalid item ID" });
+    return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
   }
 
-  ClothingItem.findByIdAndUpdate(
+  return ClothingItem.findByIdAndUpdate(
     itemId,
     { $pull: { likes: req.user._id } },
     { new: true }
   )
     .then((item) => {
       if (!item) {
-        return res.status(404).json({ message: "Item not found" });
+        return res.status(NOT_FOUND).json({ message: "Item not found" });
       }
-      res.status(200).send(item);
+      return res.status(200).send(item);
     })
     .catch((err) =>
-      res.status(500).send({ message: "Error disliking item", error: err })
+      res
+        .status(SERVER_ERROR)
+        .send({ message: "Error disliking item", error: err })
     );
 };
 
