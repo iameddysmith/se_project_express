@@ -45,7 +45,7 @@ const deleteClothingItem = (req, res) => {
     return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
   }
 
-  ClothingItem.findById(itemId)
+  return ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
         return res.status(NOT_FOUND).send({ message: "Item not found" });

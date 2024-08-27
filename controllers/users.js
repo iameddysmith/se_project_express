@@ -1,7 +1,7 @@
+const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { JWT_SECRET } = require("../utils/config");
-const mongoose = require("mongoose");
 const User = require("../models/user");
 const {
   OK,
@@ -13,13 +13,12 @@ const {
   CONFLICT,
 } = require("../utils/errors");
 
-const getUsers = (req, res) => {
+const getUsers = (req, res) =>
   User.find({})
     .then((users) => res.status(OK).json(users))
     .catch(() =>
       res.status(SERVER_ERROR).json({ message: "Error retrieving users" })
     );
-};
 
 const getUser = (req, res) => {
   const { userId } = req.params;
@@ -29,12 +28,11 @@ const getUser = (req, res) => {
   }
 
   return User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        return res.status(NOT_FOUND).json({ message: "User not found" });
-      }
-      return res.status(OK).json(user);
-    })
+    .then((user) =>
+      user
+        ? res.status(OK).json(user)
+        : res.status(NOT_FOUND).json({ message: "User not found" })
+    )
     .catch(() =>
       res.status(SERVER_ERROR).json({ message: "Error retrieving user" })
     );
@@ -43,13 +41,12 @@ const getUser = (req, res) => {
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
 
-  User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        return res.status(NOT_FOUND).json({ message: "User not found" });
-      }
-      return res.status(OK).json(user);
-    })
+  return User.findById(userId)
+    .then((user) =>
+      user
+        ? res.status(OK).json(user)
+        : res.status(NOT_FOUND).json({ message: "User not found" })
+    )
     .catch(() =>
       res.status(SERVER_ERROR).json({ message: "Error retrieving user data" })
     );
@@ -64,7 +61,7 @@ const createUser = (req, res) => {
     });
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {
         return res.status(CONFLICT).json({ message: "Email already in use" });
@@ -72,9 +69,9 @@ const createUser = (req, res) => {
 
       return bcrypt
         .hash(password, 10)
-        .then((hashedPassword) => {
-          return User.create({ name, avatar, email, password: hashedPassword });
-        })
+        .then((hashedPassword) =>
+          User.create({ name, avatar, email, password: hashedPassword })
+        )
         .then((newUser) => {
           const userResponse = newUser.toObject();
           delete userResponse.password;
@@ -82,19 +79,14 @@ const createUser = (req, res) => {
         })
         .catch((err) => {
           console.error(err);
-          if (err.name === "ValidationError") {
-            return res
-              .status(BAD_REQUEST)
-              .json({ message: "Invalid user data" });
-          }
-          return res
-            .status(SERVER_ERROR)
-            .json({ message: "Error creating user" });
+          return err.name === "ValidationError"
+            ? res.status(BAD_REQUEST).json({ message: "Invalid user data" })
+            : res.status(SERVER_ERROR).json({ message: "Error creating user" });
         });
     })
     .catch((err) => {
       console.error(err);
-      return res
+      res
         .status(SERVER_ERROR)
         .json({ message: "Error checking existing user" });
     });
@@ -104,27 +96,21 @@ const updateProfile = (req, res) => {
   const userId = req.user._id;
   const { name, avatar } = req.body;
 
-  User.findByIdAndUpdate(
+  return User.findByIdAndUpdate(
     userId,
     { name, avatar },
     { new: true, runValidators: true }
   )
-    .then((updatedUser) => {
-      if (!updatedUser) {
-        return res.status(NOT_FOUND).json({ message: "User not found" });
-      }
-      return res.status(OK).json(updatedUser);
-    })
-    .catch((err) => {
-      if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST)
-          .json({ message: "Invalid data provided" });
-      }
-      return res
-        .status(SERVER_ERROR)
-        .json({ message: "Error updating profile" });
-    });
+    .then((updatedUser) =>
+      updatedUser
+        ? res.status(OK).json(updatedUser)
+        : res.status(NOT_FOUND).json({ message: "User not found" })
+    )
+    .catch((err) =>
+      err.name === "ValidationError"
+        ? res.status(BAD_REQUEST).json({ message: "Invalid data provided" })
+        : res.status(SERVER_ERROR).json({ message: "Error updating profile" })
+    );
 };
 
 const login = (req, res) => {
@@ -141,12 +127,9 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-
       res.status(OK).send({ token });
     })
-    .catch((err) => {
-      res.status(UNAUTHORIZED).send({ message: err.message });
-    });
+    .catch((err) => res.status(UNAUTHORIZED).send({ message: err.message }));
 };
 
 module.exports = {
