@@ -6,6 +6,7 @@ const {
   BAD_REQUEST,
   NOT_FOUND,
   SERVER_ERROR,
+  FORBIDDEN,
 } = require("../utils/errors");
 
 const getClothingItems = (req, res) => {
@@ -39,19 +40,33 @@ const createClothingItem = (req, res) => {
 
 const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
+
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
     return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
   }
 
-  return ClothingItem.findByIdAndRemove(itemId)
+  ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
-      return res.status(OK).send({ message: "Item deleted successfully" });
+
+      if (item.owner.toString() !== req.user._id) {
+        return res
+          .status(FORBIDDEN)
+          .send({ message: "You do not have permission to delete this item" });
+      }
+
+      return item
+        .remove()
+        .then(() =>
+          res.status(OK).send({ message: "Item deleted successfully" })
+        );
     })
-    .catch(() =>
-      res.status(SERVER_ERROR).send({ message: "Error deleting item" })
+    .catch((err) =>
+      res
+        .status(SERVER_ERROR)
+        .send({ message: "Error deleting item", error: err.message })
     );
 };
 
