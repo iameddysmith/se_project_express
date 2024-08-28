@@ -11,10 +11,6 @@ app.use(express.json());
 app.use(cors());
 app.use(routes);
 
-app.use((req, res) => {
-  res.status(NOT_FOUND).send({ message: "Requested resource not found" });
-});
-
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {
     useNewUrlParser: true,

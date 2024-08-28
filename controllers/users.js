@@ -13,31 +13,6 @@ const {
   CONFLICT,
 } = require("../utils/errors");
 
-const getUsers = (req, res) =>
-  User.find({})
-    .then((users) => res.status(OK).json(users))
-    .catch(() =>
-      res.status(SERVER_ERROR).json({ message: "Error retrieving users" })
-    );
-
-const getUser = (req, res) => {
-  const { userId } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(BAD_REQUEST).json({ message: "Invalid user ID format" });
-  }
-
-  return User.findById(userId)
-    .then((user) =>
-      user
-        ? res.status(OK).json(user)
-        : res.status(NOT_FOUND).json({ message: "User not found" })
-    )
-    .catch(() =>
-      res.status(SERVER_ERROR).json({ message: "Error retrieving user" })
-    );
-};
-
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
 
@@ -129,12 +104,18 @@ const login = (req, res) => {
       });
       res.status(OK).send({ token });
     })
-    .catch((err) => res.status(UNAUTHORIZED).send({ message: err.message }));
+    .catch((err) => {
+      if (err.message === "Incorrect email or password") {
+        return res.status(UNAUTHORIZED).send({ message: err.message });
+      }
+      console.error(err);
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "Internal Server Error" });
+    });
 };
 
 module.exports = {
-  getUsers,
-  getUser,
   createUser,
   login,
   getCurrentUser,
