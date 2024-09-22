@@ -21,9 +21,10 @@ const getCurrentUser = (req, res) => {
         ? res.status(OK).json(user)
         : res.status(NOT_FOUND).json({ message: "User not found" })
     )
-    .catch(() =>
-      res.status(SERVER_ERROR).json({ message: "Error retrieving user data" })
-    );
+    .catch((err) => {
+      console.error("Error retrieving user data:", err);
+      res.status(SERVER_ERROR).json({ message: "Error retrieving user data" });
+    });
 };
 
 const createUser = (req, res) => {
@@ -101,13 +102,16 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
+
       res.status(OK).send({ token });
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
-        return res.status(UNAUTHORIZED).send({ message: err.message });
+        return res
+          .status(UNAUTHORIZED)
+          .send({ message: "Incorrect email or password" });
       }
-      console.error(err);
+      console.error("Error during login:", err);
       return res
         .status(SERVER_ERROR)
         .send({ message: "Internal Server Error" });
