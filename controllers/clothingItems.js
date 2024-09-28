@@ -3,58 +3,51 @@ const ClothingItem = require("../models/clothingItem");
 const {
   OK,
   CREATED,
-  BAD_REQUEST,
-  NOT_FOUND,
-  SERVER_ERROR,
-  FORBIDDEN,
+  BadRequestError,
+  NotFoundError,
+  ForbiddenError,
 } = require("../utils/errors");
 
-const getClothingItems = (req, res) => {
+// Get all clothing items
+const getClothingItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(OK).send(items))
-    .catch(() =>
-      res
-        .status(SERVER_ERROR)
-        .send({ message: "Error retrieving clothing items" })
-    );
+    .catch((err) => next(err));
 };
 
-const createClothingItem = (req, res) => {
+// Create a new clothing item
+const createClothingItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
-  return ClothingItem.create({ name, weather, imageUrl, owner })
+  ClothingItem.create({ name, weather, imageUrl, owner })
     .then((newItem) => res.status(CREATED).json(newItem))
     .catch((err) => {
-      console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).json({
-          message: "Invalid clothing item data",
-        });
+        return next(new BadRequestError("Invalid clothing item data"));
       }
-      return res.status(SERVER_ERROR).json({
-        message: "Error creating clothing item",
-      });
+      next(err);
     });
 };
 
-const deleteClothingItem = (req, res) => {
+// Delete a clothing item
+const deleteClothingItem = (req, res, next) => {
   const { itemId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
+    return next(new BadRequestError("Invalid item ID"));
   }
 
-  return ClothingItem.findById(itemId)
+  ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
+        throw new NotFoundError("Item not found");
       }
 
       if (item.owner.toString() !== req.user._id) {
-        return res
-          .status(FORBIDDEN)
-          .send({ message: "You do not have permission to delete this item" });
+        throw new ForbiddenError(
+          "You do not have permission to delete this item"
+        );
       }
 
       return item
@@ -63,57 +56,51 @@ const deleteClothingItem = (req, res) => {
           res.status(OK).send({ message: "Item deleted successfully" })
         );
     })
-    .catch((err) =>
-      res
-        .status(SERVER_ERROR)
-        .send({ message: "Error deleting item", error: err.message })
-    );
+    .catch((err) => next(err));
 };
 
-const likeItem = (req, res) => {
+// Like a clothing item
+const likeItem = (req, res, next) => {
   const { itemId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
+    return next(new BadRequestError("Invalid item ID"));
   }
 
-  return ClothingItem.findByIdAndUpdate(
+  ClothingItem.findByIdAndUpdate(
     itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
     .then((item) => {
       if (!item) {
-        return res.status(NOT_FOUND).json({ message: "Item not found" });
+        throw new NotFoundError("Item not found");
       }
-      return res.status(OK).send(item);
+      res.status(OK).send(item);
     })
-    .catch(() =>
-      res.status(SERVER_ERROR).send({ message: "Error liking item" })
-    );
+    .catch((err) => next(err));
 };
 
-const dislikeItem = (req, res) => {
+// Dislike a clothing item
+const dislikeItem = (req, res, next) => {
   const { itemId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(BAD_REQUEST).json({ message: "Invalid item ID" });
+    return next(new BadRequestError("Invalid item ID"));
   }
 
-  return ClothingItem.findByIdAndUpdate(
+  ClothingItem.findByIdAndUpdate(
     itemId,
     { $pull: { likes: req.user._id } },
     { new: true }
   )
     .then((item) => {
       if (!item) {
-        return res.status(NOT_FOUND).json({ message: "Item not found" });
+        throw new NotFoundError("Item not found");
       }
-      return res.status(OK).send(item);
+      res.status(OK).send(item);
     })
-    .catch(() =>
-      res.status(SERVER_ERROR).send({ message: "Error disliking item" })
-    );
+    .catch((err) => next(err));
 };
 
 module.exports = {
