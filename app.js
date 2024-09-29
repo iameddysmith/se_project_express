@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
+require("dotenv").config();
 const { errors } = require("celebrate");
 const routes = require("./routes");
 const errorHandler = require("./middlewares/errorHandler");
@@ -26,5 +27,5 @@ mongoose
   .catch((err) => console.error("Failed to connect to MongoDB", err));
 
 app.listen(PORT, () => {
-  console.log(`App is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
