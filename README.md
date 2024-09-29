@@ -22,6 +22,6 @@ The server is built to handle various aspects of the WTWR application, such as s
 
 `npm run dev` — to launch the server with the hot reload feature
 
-### Testing
+### Deployed Application
 
-Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
+[WTWR](https://www.wtwr.codemare.com)
