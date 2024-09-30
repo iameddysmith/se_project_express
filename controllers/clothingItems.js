@@ -7,7 +7,7 @@ const { CREATED } = require("../utils/errors");
 
 // Get all clothing items
 const getClothingItems = (req, res, next) => {
-  ClothingItem.find({})
+  return ClothingItem.find({})
     .then((items) => res.send(items))
     .catch((err) => next(err));
 };
@@ -17,7 +17,7 @@ const createClothingItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageUrl, owner })
+  return ClothingItem.create({ name, weather, imageUrl, owner })
     .then((newItem) => res.status(CREATED).json(newItem))
     .catch((err) => {
       if (err.name === "ValidationError") {
@@ -35,7 +35,7 @@ const deleteClothingItem = (req, res, next) => {
     return next(new BadRequestError("Invalid item ID"));
   }
 
-  ClothingItem.findById(itemId)
+  return ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
         throw new NotFoundError("Item not found");
@@ -71,7 +71,7 @@ const likeItem = (req, res, next) => {
       if (!item) {
         throw new NotFoundError("Item not found");
       }
-      res.send(item);
+      return res.send(item);
     })
     .catch((err) => next(err));
 };
@@ -93,7 +93,7 @@ const dislikeItem = (req, res, next) => {
       if (!item) {
         throw new NotFoundError("Item not found");
       }
-      res.send(item);
+      return res.send(item);
     })
     .catch((err) => next(err));
 };

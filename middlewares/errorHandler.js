@@ -1,7 +1,8 @@
 const { SERVER_ERROR } = require("../utils/errors");
+const winston = require("winston");
 
 const errorHandler = (err, req, res, next) => {
-  console.error(err.stack || err);
+  winston.error(err.stack || err);
 
   const statusCode = err.statusCode || SERVER_ERROR;
   const message =

@@ -11,12 +11,12 @@ const { CREATED } = require("../utils/errors");
 const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
 
-  User.findById(userId)
+  return User.findById(userId)
     .then((user) => {
       if (!user) {
         throw new NotFoundError("User not found");
       }
-      res.json(user);
+      return res.json(user);
     })
     .catch(next);
 };
@@ -32,7 +32,7 @@ const createUser = (req, res, next) => {
     );
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {
         throw new ConflictError("Email already in use");
@@ -46,13 +46,13 @@ const createUser = (req, res, next) => {
     .then((newUser) => {
       const userResponse = newUser.toObject();
       delete userResponse.password;
-      res.status(CREATED).json(userResponse);
+      return res.status(CREATED).json(userResponse);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Invalid user data"));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -60,7 +60,7 @@ const updateProfile = (req, res, next) => {
   const userId = req.user._id;
   const { name, avatar } = req.body;
 
-  User.findByIdAndUpdate(
+  return User.findByIdAndUpdate(
     userId,
     { name, avatar },
     { new: true, runValidators: true }
@@ -69,13 +69,13 @@ const updateProfile = (req, res, next) => {
       if (!updatedUser) {
         throw new NotFoundError("User not found");
       }
-      res.json(updatedUser);
+      return res.json(updatedUser);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Invalid data provided"));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -86,18 +86,18 @@ const login = (req, res, next) => {
     return next(new BadRequestError("Email and password are required"));
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      return res.send({ token });
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
         return next(new UnauthorizedError("Incorrect email or password"));
       }
-      next(err);
+      return next(err);
     });
 };
 

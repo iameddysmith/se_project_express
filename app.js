@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const winston = require("winston");
 require("dotenv").config();
 const { errors } = require("celebrate");
 const routes = require("./routes");
@@ -35,8 +36,8 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("Failed to connect to MongoDB", err));
+  .then(() => winston.info("Connected to MongoDB"))
+  .catch((err) => winston.error("Failed to connect to MongoDB", err));
 
 app.listen(PORT, () => {
   winston.info(`Server is running on port ${PORT}`);
