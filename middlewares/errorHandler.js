@@ -1,5 +1,5 @@
-const { SERVER_ERROR } = require("../utils/errors");
 const winston = require("winston");
+const { SERVER_ERROR } = require("../utils/errors");
 
 const errorHandler = (err, req, res, next) => {
   winston.error(err.stack || err);

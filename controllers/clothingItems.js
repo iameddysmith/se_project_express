@@ -6,11 +6,10 @@ const ForbiddenError = require("../utils/errors/ForbiddenError");
 const { CREATED } = require("../utils/errors");
 
 // Get all clothing items
-const getClothingItems = (req, res, next) => {
-  return ClothingItem.find({})
+const getClothingItems = (req, res, next) =>
+  ClothingItem.find({})
     .then((items) => res.send(items))
     .catch((err) => next(err));
-};
 
 // Create a new clothing item
 const createClothingItem = (req, res, next) => {
@@ -71,7 +70,7 @@ const likeItem = (req, res, next) => {
       if (!item) {
         throw new NotFoundError("Item not found");
       }
-      return res.send(item);
+      res.send(item);
     })
     .catch((err) => next(err));
 };
@@ -93,7 +92,7 @@ const dislikeItem = (req, res, next) => {
       if (!item) {
         throw new NotFoundError("Item not found");
       }
-      return res.send(item);
+      res.send(item);
     })
     .catch((err) => next(err));
 };
