@@ -23,7 +23,7 @@ const createClothingItem = (req, res, next) => {
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Invalid clothing item data"));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -62,7 +62,7 @@ const likeItem = (req, res, next) => {
     return next(new BadRequestError("Invalid item ID"));
   }
 
-  ClothingItem.findByIdAndUpdate(
+  return ClothingItem.findByIdAndUpdate(
     itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true }
@@ -84,7 +84,7 @@ const dislikeItem = (req, res, next) => {
     return next(new BadRequestError("Invalid item ID"));
   }
 
-  ClothingItem.findByIdAndUpdate(
+  return ClothingItem.findByIdAndUpdate(
     itemId,
     { $pull: { likes: req.user._id } },
     { new: true }

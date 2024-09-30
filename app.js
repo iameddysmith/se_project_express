@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 require("dotenv").config();
 const { errors } = require("celebrate");
 const routes = require("./routes");
 const errorHandler = require("./middlewares/errorHandler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
-const helmet = require("helmet");
 const apiLimiter = require("./middlewares/rateLimiter");
 
 const app = express();
@@ -15,7 +15,7 @@ const { PORT = 3001 } = process.env;
 app.use(helmet());
 app.use(apiLimiter);
 
-//remove after review
+// remove after review
 app.get("/crash-test", () => {
   setTimeout(() => {
     throw new Error("Server will crash now");
@@ -39,5 +39,5 @@ mongoose
   .catch((err) => console.error("Failed to connect to MongoDB", err));
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  winston.info(`Server is running on port ${PORT}`);
 });
