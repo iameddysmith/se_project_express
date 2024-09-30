@@ -6,9 +6,14 @@ const { errors } = require("celebrate");
 const routes = require("./routes");
 const errorHandler = require("./middlewares/errorHandler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
+const helmet = require("helmet");
+const apiLimiter = require("./middlewares/rateLimiter");
 
 const app = express();
 const { PORT = 3001 } = process.env;
+
+app.use(helmet());
+app.use(apiLimiter);
 
 //remove after review
 app.get("/crash-test", () => {

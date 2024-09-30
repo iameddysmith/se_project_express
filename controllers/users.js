@@ -2,15 +2,11 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { JWT_SECRET } = require("../utils/config");
 const User = require("../models/user");
-const {
-  OK,
-  CREATED,
-  BadRequestError,
-  NotFoundError,
-  ConflictError,
-  UnauthorizedError,
-  ServerError,
-} = require("../utils/errors");
+const BadRequestError = require("../utils/errors/BadRequestError");
+const NotFoundError = require("../utils/errors/NotFoundError");
+const ConflictError = require("../utils/errors/ConflictError");
+const UnauthorizedError = require("../utils/errors/UnauthorizedError");
+const { CREATED } = require("../utils/errors");
 
 const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
@@ -20,9 +16,9 @@ const getCurrentUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError("User not found");
       }
-      res.status(OK).json(user);
+      res.json(user);
     })
-    .catch((err) => next(err));
+    .catch(next);
 };
 
 const createUser = (req, res, next) => {
@@ -73,7 +69,7 @@ const updateProfile = (req, res, next) => {
       if (!updatedUser) {
         throw new NotFoundError("User not found");
       }
-      res.status(OK).json(updatedUser);
+      res.json(updatedUser);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
@@ -95,7 +91,7 @@ const login = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.status(OK).send({ token });
+      res.send({ token });
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {

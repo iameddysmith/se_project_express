@@ -1,17 +1,14 @@
 const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
-const {
-  OK,
-  CREATED,
-  BadRequestError,
-  NotFoundError,
-  ForbiddenError,
-} = require("../utils/errors");
+const BadRequestError = require("../utils/errors/BadRequestError");
+const NotFoundError = require("../utils/errors/NotFoundError");
+const ForbiddenError = require("../utils/errors/ForbiddenError");
+const { CREATED } = require("../utils/errors");
 
 // Get all clothing items
 const getClothingItems = (req, res, next) => {
   ClothingItem.find({})
-    .then((items) => res.status(OK).send(items))
+    .then((items) => res.send(items))
     .catch((err) => next(err));
 };
 
@@ -52,9 +49,7 @@ const deleteClothingItem = (req, res, next) => {
 
       return item
         .remove()
-        .then(() =>
-          res.status(OK).send({ message: "Item deleted successfully" })
-        );
+        .then(() => res.send({ message: "Item deleted successfully" }));
     })
     .catch((err) => next(err));
 };
@@ -76,7 +71,7 @@ const likeItem = (req, res, next) => {
       if (!item) {
         throw new NotFoundError("Item not found");
       }
-      res.status(OK).send(item);
+      res.send(item);
     })
     .catch((err) => next(err));
 };
@@ -98,7 +93,7 @@ const dislikeItem = (req, res, next) => {
       if (!item) {
         throw new NotFoundError("Item not found");
       }
-      res.status(OK).send(item);
+      res.send(item);
     })
     .catch((err) => next(err));
 };
